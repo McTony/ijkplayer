@@ -1,6 +1,7 @@
 /*
  * ff_ffplaye_options.h
  *
+ * Copyright (c) 2015 Bilibili
  * Copyright (c) 2015 Zhang Rui <bbcallen@gmail.com>
  *
  * This file is part of ijkPlayer.
@@ -79,6 +80,8 @@ static const AVOption ffp_context_options[] = {
         OPTION_OFFSET(framedrop),       OPTION_INT(0, -1, 120) },
     { "seek-at-start",                  "set offset of player should be seeked",
         OPTION_OFFSET(seek_at_start),       OPTION_INT64(0, 0, INT_MAX) },
+    { "subtitle",                       "decode subtitle stream",
+        OPTION_OFFSET(subtitle),        OPTION_INT(0, 0, 1) },
     // FFP_MERGE: window_title
 #if CONFIG_AVFILTER
     { "af",                             "audio filters",
@@ -144,6 +147,9 @@ static const AVOption ffp_context_options[] = {
     { "preset-5-1-center-mix-level",        "preset center-mix-level for 5.1 channel",
         OPTION_OFFSET(preset_5_1_center_mix_level), OPTION_DOUBLE(M_SQRT1_2, -32, 32) },
 
+    { "enable-accurate-seek",                      "enable accurate seek",
+        OPTION_OFFSET(enable_accurate_seek),       OPTION_INT(0, 0, 1) },
+
         // iOS only options
     { "videotoolbox",                       "VideoToolbox: enable",
         OPTION_OFFSET(videotoolbox),        OPTION_INT(0, 0, 1) },
@@ -175,7 +181,9 @@ static const AVOption ffp_context_options[] = {
         OPTION_OFFSET(mediacodec_handle_resolution_change),     OPTION_INT(0, 0, 1) },
     { "opensles",                           "OpenSL ES: enable",
         OPTION_OFFSET(opensles),            OPTION_INT(0, 0, 1) },
-    
+    { "soundtouch",                           "SoundTouch: enable",
+        OPTION_OFFSET(soundtouch_enable),            OPTION_INT(0, 0, 1) },
+
     { NULL }
 };
 

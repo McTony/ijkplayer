@@ -1,6 +1,7 @@
 /*
  * ijkplayer.c
  *
+ * Copyright (c) 2013 Bilibili
  * Copyright (c) 2013 Zhang Rui <bbcallen@gmail.com>
  *
  * This file is part of ijkPlayer.
@@ -135,13 +136,24 @@ IjkMediaPlayer *ijkmp_create(int (*msg_loop)(void*))
     return NULL;
 }
 
-void ijkmp_set_inject_opaque(IjkMediaPlayer *mp, void *opaque)
+void *ijkmp_set_inject_opaque(IjkMediaPlayer *mp, void *opaque)
 {
     assert(mp);
 
     MPTRACE("%s(%p)\n", __func__, opaque);
-    ffp_set_inject_opaque(mp->ffplayer, opaque);
+    void *prev_weak_thiz = ffp_set_inject_opaque(mp->ffplayer, opaque);
     MPTRACE("%s()=void\n", __func__);
+    return prev_weak_thiz;
+}
+
+void *ijkmp_set_ijkio_inject_opaque(IjkMediaPlayer *mp, void *opaque)
+{
+    assert(mp);
+
+    MPTRACE("%s(%p)\n", __func__, opaque);
+    void *prev_weak_thiz = ffp_set_ijkio_inject_opaque(mp->ffplayer, opaque);
+    MPTRACE("%s()=void\n", __func__);
+    return prev_weak_thiz;
 }
 
 void ijkmp_set_option(IjkMediaPlayer *mp, int opt_category, const char *name, const char *value)
@@ -197,6 +209,17 @@ void ijkmp_set_playback_rate(IjkMediaPlayer *mp, float rate)
     MPTRACE("%s(%f)\n", __func__, rate);
     pthread_mutex_lock(&mp->mutex);
     ffp_set_playback_rate(mp->ffplayer, rate);
+    pthread_mutex_unlock(&mp->mutex);
+    MPTRACE("%s()=void\n", __func__);
+}
+
+void ijkmp_set_playback_volume(IjkMediaPlayer *mp, float volume)
+{
+    assert(mp);
+
+    MPTRACE("%s(%f)\n", __func__, volume);
+    pthread_mutex_lock(&mp->mutex);
+    ffp_set_playback_volume(mp->ffplayer, volume);
     pthread_mutex_unlock(&mp->mutex);
     MPTRACE("%s()=void\n", __func__);
 }
@@ -652,6 +675,7 @@ void *ijkmp_set_weak_thiz(IjkMediaPlayer *mp, void *weak_thiz)
     return prev_weak_thiz;
 }
 
+/* need to call msg_free_res for freeing the resouce obtained in msg */
 int ijkmp_get_msg(IjkMediaPlayer *mp, AVMessage *msg, int block)
 {
     assert(mp);
@@ -752,9 +776,10 @@ int ijkmp_get_msg(IjkMediaPlayer *mp, AVMessage *msg, int block)
             pthread_mutex_unlock(&mp->mutex);
             break;
         }
-
-        if (continue_wait_next_msg)
+        if (continue_wait_next_msg) {
+            msg_free_res(msg);
             continue;
+        }
 
         return retval;
     }
